@@ -6,8 +6,9 @@
 #       -e DISPLAY=$DISPLAY \
 #       -e XAUTHORITY=$XAUTH \        
 #       -v /tmp/.X11-unix:/tmp/.X11-unix \            
-#       -v `pwd`/.netbeans-docker:/home/kisira/.netbeans \            
-#       -v `pwd`:/workspace kisira/netbeans
+#       -v /home/kisira/workspace:/home/developer/ \
+#       -v /home/kisira/Development/docker-netbeans/workspace:/workspace \
+#       kisira/netbeans
 #
 #Additionally Create a symbolic link as below on terminal: 
 #   ln -s ./bin ./script
@@ -97,7 +98,6 @@ ENV PATH /home/developer/.rbenv/bin:$PATH #ENV PATH /root/.rbenv/bin:$PATH
 RUN echo 'eval "$(rbenv init -)"' >> /etc/profile.d/rbenv.sh # or /etc/profile
 RUN echo 'eval "$(rbenv init -)"' >> .bashrc
 RUN echo 'eval "$(rbenv init -)"' >> $HOME/.bash_profile
-#RUN /bin/bash -C "source $HOME/.bash_profile"
 
 # Install ruby version 2.3.0
 ENV CONFIGURE_OPTS --disable-install-doc
@@ -108,7 +108,6 @@ RUN bash -l -c 'gem update'
 RUN bash -l -c 'gem install nokogiri' #RUN bash -l -c 'gem install nokogiri -- --use-system-libraries'
 
 # Install Bundler for ruby
-#RUN echo 'gem: --no-rdoc --no-ri' >> /.gemrc
 RUN bash -l -c 'rbenv global 2.3.0; gem install bundler;'
 RUN bash -l -c 'gem install rails-api --no-rdoc --no-ri'
 RUN bash -l -c 'gem install mime-types-data --no-rdoc --no-ri'
@@ -116,12 +115,13 @@ RUN bash -l -c 'gem install rails --no-rdoc --no-ri'
 RUN bash -l -c 'gem install mysql2 --no-rdoc --no-ri'
 RUN bash -l -c 'gem install ruby-debug-ide --no-rdoc --no-ri'
 
-# install RVM, Ruby, and Bundler
+# install RVM
 RUN gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
 RUN \curl -L https://get.rvm.io | bash -s stable --rails
-#RUN /bin/bash -l -c "rvm requirements"
-#RUN /bin/bash -l -c "rvm install 2.3.0"
-#RUN /bin/bash -l -c "gem install bundler --no-ri --no-rdoc"
+RUN bash -l -c 'source /usr/local/rvm/scripts/rvm'
+
+RUN PATH="/usr/local/netbeans/bin:$PATH"
+
 
 #RUN /usr/sbin/mysqld 
     #& \
@@ -137,5 +137,5 @@ EXPOSE 3000
 USER developer
 ENV HOME /home/developer
 WORKDIR /home/developer
-CMD sudo service mysql restart && /usr/local/netbeans/bin/netbeans &
+CMD sudo service mysql restart && bash #/usr/local/netbeans/bin/netbeans 
 #CMD bash 
