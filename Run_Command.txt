@@ -1,0 +1,13 @@
+ #Run container
+ docker run -ti --rm  \
+    -e DISPLAY=$DISPLAY  \
+    -e XAUTHORITY=$XAUTH  \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    -v /home/kisira/workspace:/home/developer/ -v /home/kisira/Development/docker-netbeans/workspace:/workspace
+    kisira/netbeans
+    
+#Bind port
+sudo iptables -t nat -A  DOCKER -p tcp --dport 3001 -j DNAT --to-destination 172.17.0.2:3000
+
+    
+    
