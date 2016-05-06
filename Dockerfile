@@ -36,7 +36,9 @@ RUN add-apt-repository ppa:git-core/ppa -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /tmp/*
-    
+
+#RUN mkdir /etc/mysql/conf.d/ 
+#COPY ./my.cnf /etc/mysql/conf.d/mysql.cnf
 RUN export DEBIAN_FRONTEND="noninteractive" && \    
     apt-get update && apt-get -q -y install mysql-server libmysqlclient-dev && \    
     apt-get clean && \    
@@ -77,25 +79,15 @@ RUN mkdir -p /home/plugins
 COPY $NETBEANS_PLUGIN /home/plugins/ruby_and_rails.zip
 RUN unzip /home/plugins/ruby_and_rails.zip -d /home/plugins/ruby_and_rails
 
+RUN mkdir /home/ruby  && \
+    git clone https://github.com/rbenv/rbenv.git /home/ruby/.rbenv && \    
+    git clone https://github.com/rbenv/ruby-build.git /home/ruby/.rbenv/plugins/ruby-build && \    
+    git clone https://github.com/rbenv/rbenv-gem-rehash.git /home/ruby/.rbenv/plugins/rbenv-gem-rehash     
 
-RUN export uid=1000 gid=1000 && \
-    mkdir -p /home/developer && \
-    echo "developer:x:${uid}:${gid}:Developer,,,:/home/developer:/bin/bash" >> /etc/passwd && \
-    echo "developer:x:${uid}:" >> /etc/group && \
-    echo "developer ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/developer && \
-    chmod 0440 /etc/sudoers.d/developer && \
-    chown ${uid}:${gid} -R /home/developer
+RUN /home/ruby/.rbenv/plugins/ruby-build/install.sh
 
-RUN git clone https://github.com/rbenv/rbenv.git /home/developer/.rbenv && \
-    echo 'export PATH="/home/developer/.rbenv/bin:$PATH"' >> /home/developer/.bashrc && \
-    git clone https://github.com/rbenv/ruby-build.git /home/developer/.rbenv/plugins/ruby-build && \
-    echo 'export PATH="/home/developer/.rbenv/plugins/ruby-build/bin:$PATH"' >> /home/developer/.bashrc && \
-    git clone https://github.com/rbenv/rbenv-gem-rehash.git /home/developer/.rbenv/plugins/rbenv-gem-rehash     
-    
-    
-RUN /home/developer/.rbenv/plugins/ruby-build/install.sh
-ENV PATH /home/developer/.rbenv/bin:$PATH #ENV PATH /root/.rbenv/bin:$PATH
-RUN echo 'eval "$(rbenv init -)"' >> /etc/profile.d/rbenv.sh # or /etc/profile
+ENV PATH /home/ruby/.rbenv/bin:$PATH #ENV PATH /root/.rbenv/bin:$PATH
+#RUN echo 'eval "$(rbenv init -)"' >> /etc/profile.d/rbenv.sh # or /etc/profile
 RUN echo 'eval "$(rbenv init -)"' >> .bashrc
 RUN echo 'eval "$(rbenv init -)"' >> $HOME/.bash_profile
 
@@ -120,22 +112,31 @@ RUN gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A170311380
 RUN \curl -L https://get.rvm.io | bash -s stable --rails
 RUN bash -l -c 'source /usr/local/rvm/scripts/rvm'
 
-RUN PATH="/usr/local/netbeans/bin:$PATH"
+ENV PATH=/usr/local/netbeans/bin:$PATH
 
-
-#RUN /usr/sbin/mysqld 
-    #& \
-    #sleep 10s &&\
-    #echo "GRANT ALL ON *.* TO admin@'%' IDENTIFIED BY 'changeme' WITH GRANT OPTION; FLUSH PRIVILEGES" | mysql
-    
 EXPOSE 3306
 EXPOSE 22
 EXPOSE 80
 EXPOSE 3389
 EXPOSE 3000
 
+RUN export uid=1000 gid=1000 && \  
+    mkdir -p /home/developer && \
+    echo "developer:x:${uid}:${gid}:Developer,,,:/home/developer:/bin/bash" >> /etc/passwd && \
+    echo "developer:x:${uid}:" >> /etc/group && \
+    echo "developer ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/developer && \
+    echo 'export PATH="/home/ruby/.rbenv/bin:$PATH"' >> /home/developer/.bashrc && \
+    echo 'export PATH="/home/ruby/.rbenv/plugins/ruby-build/bin:$PATH"' >> /home/developer/.bashrc && \
+    chmod 0440 /etc/sudoers.d/developer && \
+    chown ${uid}:${gid} -R /home/developer
+
+#RUN /usr/sbin/mysqld 
+    #& \
+    #sleep 10s &&\
+    #echo "GRANT ALL ON *.* TO admin@'%' IDENTIFIED BY 'changeme' WITH GRANT OPTION; FLUSH PRIVILEGES" | mysql
+    
 USER developer
 ENV HOME /home/developer
 WORKDIR /home/developer
-CMD sudo service mysql restart && bash #/usr/local/netbeans/bin/netbeans 
+CMD sudo service mysql start && bash #/usr/local/netbeans/bin/netbeans 
 #CMD bash 
