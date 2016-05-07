@@ -24,8 +24,8 @@ RUN sed 's/main$/main universe/' -i /etc/apt/sources.list && \
     libffi-dev libreadline-dev debconf-utils xvfb nodejs ruby ruby-dev ruby-bundler \
     openssl libreadline6 zlib1g libssl-dev libyaml-dev \
     libsqlite3-dev sqlite3 libxml2-dev libxslt-dev autoconf libc6-dev ncurses-dev \
-    automake libtool bison subversion pkg-config \
-    libpq-dev libxext-dev libxrender-dev libxtst-dev unzip firefox && \    
+    automake libtool bison subversion pkg-config xterm netcat \
+    libpq-dev libxext-dev libxrender-dev libxtst-dev unzip  firefox && \    
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /tmp/*
