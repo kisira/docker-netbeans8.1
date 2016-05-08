@@ -22,7 +22,7 @@ RUN sed 's/main$/main universe/' -i /etc/apt/sources.list && \
     apt-utils curl wget zlib1g-dev patch sudo libxml2-dev libxslt1-dev gksu \   
     liblzma-dev libcurl4-openssl-dev python-software-properties ruby-pkg-config \
     libffi-dev libreadline-dev debconf-utils xvfb nodejs ruby ruby-dev ruby-bundler \
-    openssl libreadline6 zlib1g libssl-dev libyaml-dev \
+    openssl libreadline6 zlib1g libssl-dev libyaml-dev terminator \
     libsqlite3-dev sqlite3 libxml2-dev libxslt-dev autoconf libc6-dev ncurses-dev \
     automake libtool bison subversion pkg-config xterm netcat \
     libpq-dev libxext-dev libxrender-dev libxtst-dev unzip  firefox && \    
@@ -33,6 +33,17 @@ RUN sed 's/main$/main universe/' -i /etc/apt/sources.list && \
 RUN add-apt-repository ppa:git-core/ppa -y && \
     apt-get update && \
     apt-get install -y git-core && \                
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /tmp/*
+
+RUN add-apt-repository ppa:webupd8team/java -y && \
+    apt-get update && \
+    echo debconf shared/accepted-oracle-license-v1-1 select true | \
+    debconf-set-selections && \
+    echo debconf shared/accepted-oracle-license-v1-1 seen true | \
+    debconf-set-selections && \
+    apt-get install -y oracle-java7-installer jruby  && \     
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     rm -rf /tmp/*
@@ -111,8 +122,10 @@ RUN bash -l -c 'gem install ruby-debug-ide --no-rdoc --no-ri'
 RUN gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3
 RUN \curl -L https://get.rvm.io | bash -s stable --rails
 RUN bash -l -c 'source /usr/local/rvm/scripts/rvm'
+#RUN bash -l -c 'source $HOME/.rvm/scripts/rvm'
 
 ENV PATH=/usr/local/netbeans/bin:$PATH
+ENV PATH=/usr/local/rvm/scripts/rvm:$PATH
 
 EXPOSE 3306
 EXPOSE 22
